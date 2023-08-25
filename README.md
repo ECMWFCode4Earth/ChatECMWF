@@ -99,7 +99,18 @@ For this reason we only test for the completion of the workflow spawned by a que
 ## Authors
 
 [Piero Ferrarese](mailto:piero@sciscry.ai)  
+
 [Giacomo Bighin](mailto:bighin@gmail.com)
+
+## Mentors
+
+[Baudouin Raoult]()
+
+[Sylvie Lamy-Thepaut]()
+
+[Helen Setchell]()
+
+[Myranda Uselton Shirk]()
 
 ## License
 
