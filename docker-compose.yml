@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    webserver:
+        image: nginx_proxy
+        ports:
+            - 8000:80
+        networks:
+            - ecmwf
+        volumes:
+            - ./data:/usr/share/nginx/html/maps
+
+    chatECMWF:
+        image: chatecmwf
+        environment:
+           - ECMWF_CHARTS_SERVER=${ECMWF_CHARTS_SERVER}
+           - OPENAI_API_KEY=${OPENAI_API_KEY}
+           - HUGGINGFACEHUB_API_TOKEN=${HUGGINGFACEHUB_API_TOKEN}
+        networks:
+           - ecmwf
+        volumes:
+            - ./data:/opt/run/data
+            - ./vector_db:/opt/run/vector_db
+
+networks:
+    ecmwf:

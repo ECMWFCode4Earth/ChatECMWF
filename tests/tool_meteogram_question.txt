@@ -1,0 +1,3 @@
+Show me a meteogram of Bologna, Italy
+Show me a meteogram of Bonn, Germany
+Show me a meteogram of Reading, UK

@@ -1,0 +1,7 @@
+**~
+**__pycache__
+venv/
+data/
+**\#*
+nohup.out
+.cdsapirc

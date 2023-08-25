@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+    <title>REPLACE_TITLE</title>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css" />
+    <style>
+      body { margin:0; padding:0; }
+      body, table, tr, td, th, div, h1, h2, input { font-family: "Calibri", "Trebuchet MS", "Ubuntu", Serif; font-size: 11pt; }
+      #map { position:absolute; top:0; bottom:0; width:100%; } /* full size */
+      .ctl {
+          padding: 2px 10px 2px 10px;
+          background: white;
+          background: rgba(255,255,255,0.9);
+          box-shadow: 0 0 15px rgba(0,0,0,0.2);
+          border-radius: 5px;
+          text-align: right;
+      }
+      .title {
+          font-size: 18pt;
+          font-weight: bold;
+      }
+      .src {
+          font-size: 10pt;
+      }
+      .legend {
+      line-height: 18px;
+      color: #555;
+      }
+      .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+      }
+      .grad-step {
+      width: 0.4%;
+      height: 20px;
+      display: inline-block;
+      }
+      .gradient {
+      width: 85%;
+      white-space: nowrap;
+      position: relative;
+      display: inline-block;
+      top: 4px;
+      padding-bottom: 15px;
+      }
+      .gradient .domain-min {
+      position: absolute;
+      left: 0;
+      font-size: 11px;
+      bottom: 3px;
+      }
+      .gradient .domain-max {
+      position: absolute;
+      right: 0;
+      font-size: 11px;
+      bottom: 3px;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div id="map" style="z-index: 1"></div>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js" type="text/javascript" ></script>    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script> (function() {
+     L.TileLayer.ColorPicker = L.TileLayer.extend({
+	 options: {
+	     crossOrigin: "anonymous",
+	     title: "colorPicker"
+	 },
+	 getColor: function(latlng) {
+	     var size = this.getTileSize();
+	     this._tileZoom = 2;
+	     var point = this._map.project(latlng, this._tileZoom).floor();
+	     var coords = point.unscaleBy(size).floor();
+	     var offset = point.subtract(coords.scaleBy(size));
+	     coords.z = this._tileZoom;
+	     var tile = this._tiles[this._tileCoordsToKey(coords)];
+	     if (!tile || !tile.loaded) return null;
+	     try {
+		 var canvas = document.createElement("canvas");
+		 canvas.width = 1;
+		 canvas.height = 1;
+		 var context = canvas.getContext('2d');
+		 context.drawImage(tile.el, -offset.x, -offset.y, size.x, size.y);
+		 return context.getImageData(0, 0, 1, 1).data;
+	     } catch (e) {
+		 return null;
+	     }
+	 }
+     });
+     L.tileLayer.colorPicker = function(url, options) {
+	 return new L.TileLayer.ColorPicker(url, options);
+     };
+ })();
+    </script>    
+    <script>
+      L.TimeDimension.Layer.TileLayer = L.TimeDimension.Layer.extend({});
+
+      L.timeDimension.layer.tileLayer = function(layer, options) {
+	  return new L.TimeDimension.Layer.TileLayer(layer, options);
+      };
+
+      L.TimeDimension.Layer.TileLayer.Portus = L.TimeDimension.Layer.TileLayer.extend({
+
+	  initialize: function(layer, options) {
+              L.TimeDimension.Layer.TileLayer.prototype.initialize.call(this, layer, options);
+              this._layers = {};
+	      this._colorpicker = null;	      
+	      this_colorLayers = {};
+              this._defaultTime = 0;
+              this._availableTimes = [];
+              this._timeCacheBackward = this.options.cacheBackward || this.options.cache || 0;
+              this._timeCacheForward = this.options.cacheForward || this.options.cache || 0;
+	      
+              this._baseLayer.on('load', (function() {
+		  this._baseLayer.setLoaded(true);
+		  this.fire('timeload', {
+                      time: this._defaultTime
+		  });
+              }).bind(this));
+	  },
+	  
+	  eachLayer: function(method, context) {
+              for (var prop in this._layers) {
+		  if (this._layers.hasOwnProperty(prop)) {
+                      method.call(context, this._layers[prop]);
+		  }
+              }
+              return L.TimeDimension.Layer.TileLayer.prototype.eachLayer.call(this, method, context);
+	  },
+	  
+	  _onNewTimeLoading: function(ev) {
+              var layer = this._getLayerForTime(ev.time);
+              if (!this._map.hasLayer(layer)) {
+		  this._map.addLayer(layer);
+              }
+	  },
+	  
+	  isReady: function(time) {
+              var layer = this._getLayerForTime(time);
+              var currentZoom = this._map.getZoom();
+              if (layer.options.minZoom && currentZoom < layer.options.minZoom){
+		  return true;
+              }
+              if (layer.options.maxZoom && currentZoom > layer.options.maxZoom){
+		  return true;
+              }
+              return layer.isLoaded();
+	  },
+
+	  _update: function() {
+              if (!this._map)
+		  return;
+              var time = this._timeDimension.getCurrentTime();
+              // It will get the layer for this time (create or get)
+              // Then, the layer will be loaded if necessary, adding it to the map (and show it after loading).
+              // If it already on the map (but probably hidden), it will be shown
+              var layer = this._getLayerForTime(time);
+	      var colorpicker = L.tileLayer.colorPicker(layer._url + '?nocache', {
+		  tms: true,
+		  opacity: 0,
+		  minZoom: 1,
+		  maxZoom: 15,
+		  maxNativeZoom: 2		  
+	      });
+	      this._colorpicker = colorpicker;
+
+              if (this._currentLayer == null) {
+		  this._currentLayer = layer;
+              }
+              if (!this._map.hasLayer(layer)) {
+		  this._map.addLayer(layer);
+		  this._map.addLayer(colorpicker);		  
+              } else {
+		  this._showLayer(layer, time);
+              }
+	  },
+	  
+	  setOpacity: function(opacity) {
+              L.TimeDimension.Layer.TileLayer.prototype.setOpacity.apply(this, arguments);
+              // apply to all preloaded caches
+              for (var prop in this._layers) {
+		  if (this._layers.hasOwnProperty(prop) && this._layers[prop].setOpacity) {
+                      this._layers[prop].setOpacity(opacity);
+		  }
+              }
+	  },
+	  
+	  setZIndex: function(zIndex){
+              L.TimeDimension.Layer.TileLayer.prototype.setZIndex.apply(this, arguments);
+              // apply to all preloaded caches
+              for (var prop in this._layers) {
+		  if (this._layers.hasOwnProperty(prop) && this._layers[prop].setZIndex) {
+                      this._layers[prop].setZIndex(zIndex);
+		  }
+              }
+	  },
+	  
+	  _unvalidateCache: function() {
+              var time = this._timeDimension.getCurrentTime();
+              for (var prop in this._layers) {
+		  if (time != prop && this._layers.hasOwnProperty(prop)) {
+                      this._layers[prop].setLoaded(false); // mark it as unloaded
+                      this._layers[prop].redraw();
+		  }
+              }
+	  },
+	  
+	  _evictCachedTimes: function(keepforward, keepbackward) {
+              // Cache management
+              var times = this._getLoadedTimes();
+              var strTime = String(this._currentTime);
+              var index = times.indexOf(strTime);
+              var remove = [];
+              // remove times before current time
+              if (keepbackward > -1) {
+		  var objectsToRemove = index - keepbackward;
+		  if (objectsToRemove > 0) {
+                      remove = times.splice(0, objectsToRemove);
+                      this._removeLayers(remove);
+		  }
+              }
+              if (keepforward > -1) {
+		  index = times.indexOf(strTime);
+		  var objectsToRemove = times.length - index - keepforward - 1;
+		  if (objectsToRemove > 0) {
+                      remove = times.splice(index + keepforward + 1, objectsToRemove);
+                      this._removeLayers(remove);
+		  }
+              }
+	  },
+	  
+	  _showLayer: function(layer, time) {
+              if (this._currentLayer && this._currentLayer !== layer) {
+		  this._currentLayer.hide();
+              }
+              layer.show();
+              if (this._currentLayer && this._currentLayer === layer) {
+		  return;
+              }
+              this._currentLayer = layer;
+	      var colorpicker = L.tileLayer.colorPicker(layer._url + '?nocache', {
+		  tms: true,
+		  opacity: 0,
+		  minZoom: 1,
+		  maxZoom: 15,
+		  maxNativeZoom: 2	  
+	      });
+	      this._colorpicker = colorpicker;
+	      this._map.addLayer(colorpicker);
+	      
+              this._currentTime = time;
+              console.log('Show layer with time: ' + new Date(time).toISOString());
+	      
+              this._evictCachedTimes(this._timeCacheForward, this._timeCacheBackward);
+	  },
+	  
+	  _getLayerForTime: function(time) {
+              if (time == 0 || time == this._defaultTime || time == null) {
+		  return this._baseLayer;
+              }
+              if (this._layers.hasOwnProperty(time)) {
+		  return this._layers[time];
+              }
+              var nearestTime = this._getNearestTime(time);
+              if (this._layers.hasOwnProperty(nearestTime)) {
+		  return this._layers[nearestTime];
+              }
+	      
+              var newLayer = this._createLayerForTime(nearestTime);
+	      
+	      this._layers[time] = newLayer;
+	      
+              newLayer.on('load', (function(layer, time) {
+		  layer.setLoaded(true);
+		  // this time entry should exists inside _layers
+		  // but it might be deleted by cache management
+		  if (!this._layers[time]) {
+                      this._layers[time] = layer;
+		  }
+		  if (this._timeDimension && time == this._timeDimension.getCurrentTime() && !this._timeDimension.isLoading()) {
+                      this._showLayer(layer, time);
+		  }		  
+		  // console.log('Loaded layer ' + layer.wmsParams.layers + ' with time: ' + new Date(time).toISOString());
+		  this.fire('timeload', {
+                      time: time
+		  });
+              }).bind(this, newLayer, time));
+	      
+        // Hack to hide the layer when added to the map.
+              // It will be shown when timeload event is fired from the map (after all layers are loaded)
+              newLayer.onAdd = (function(map) {
+		  Object.getPrototypeOf(this).onAdd.call(this, map);
+		  this.hide();
+              }).bind(newLayer);
+              return newLayer;
+	  },
+	  
+	  _createLayerForTime:function(time){
+              var options = this._baseLayer.options;
+              var url = this._baseLayer.getURL();
+	      
+              var startDate = new Date(time);
+              startDate.setUTCHours(0, 0, 0, 0);
+              var startDateFormatted = startDate.toISOString().substring(0,10);
+              url = url.replace('{d}', startDateFormatted);
+	      
+              var hours = new Date(time).getUTCHours();
+              url = url.replace('{h}', hours);
+              return new this._baseLayer.constructor(url, {tms: true,
+							   opacity: 0.5,
+							   minZoom: 1,
+							   maxZoom: 15,
+							   maxNativeZoom: 2});
+	  },
+	  
+	  _getLoadedTimes: function() {
+              var result = [];
+              for (var prop in this._layers) {
+		  if (this._layers.hasOwnProperty(prop)) {
+                      result.push(prop);
+		  }
+              }
+              return result.sort(function(a, b) {
+		  return a - b;
+              });
+	  },
+	  
+	  _removeLayers: function(times) {
+              for (var i = 0, l = times.length; i < l; i++) {
+		  if (this._map)
+                      this._map.removeLayer(this._layers[times[i]]);
+		  delete this._layers[times[i]];
+              }
+	  },
+	  
+	  setMinimumForwardCache: function(value) {
+              if (value > this._timeCacheForward) {
+		  this._timeCacheForward = value;
+              }
+	  },
+	  
+	  _getNearestTime: function(time) {
+              if (this._layers.hasOwnProperty(time)) {
+		  return time;
+              }
+              if (this._availableTimes.length == 0) {
+		  return time;
+              }
+              var index = 0;
+              var len = this._availableTimes.length;
+              for (; index < len; index++) {
+		  if (time < this._availableTimes[index]) {
+                      break;
+		  }
+              }
+              // We've found the first index greater than the time. Get the previous
+              if (index > 0) {
+		  index--;
+              }
+              if (time != this._availableTimes[index]) {
+		  console.log('Search layer time: ' + new Date(time).toISOString());
+		  console.log('Return layer time: ' + new Date(this._availableTimes[index]).toISOString());
+              }
+              return this._availableTimes[index];
+	  },
+	  
+      });
+      
+      L.timeDimension.layer.tileLayer.portus = function(layer, options) {
+	  return new L.TimeDimension.Layer.TileLayer.Portus(layer, options);
+	  };
+	  </script>
+    <script>
+      /* **** Leaflet **** */
+      // Base layers
+      //  .. OpenStreetMap
+      var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+      //  .. CartoDB Positron
+      var cartodb = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'});
+      // Overlay layers (TMS)
+      // 
+      var grib_ecmwf = L.tileLayer('./data/{d}/{h}/output/{z}/{y}/{x}.png', {tms: true, opacity: 0.7, attribution: "ECMWF", maxNativeZoom: 1, maxZoom: 15});
+      var TimeGribLayer = L.timeDimension.layer.tileLayer.portus(grib_ecmwf, {});      
+      // Map
+L.CursorHandler = L.Handler.extend({
+	  
+	  addHooks: function () {
+              this._popup = new L.Popup();
+              this._map.on('mouseover', this._open, this);
+              this._map.on('mousemove', this._update, this);
+              this._map.on('mouseout', this._close, this);
+	  },
+	  
+	  removeHooks: function () {
+              this._map.off('mouseover', this._open, this);
+              this._map.off('mousemove', this._update, this);
+              this._map.off('mouseout', this._close, this);
+	  },
+	  
+	  _open: function (e) {
+              this._update(e);
+              this._popup.openOn(this._map);
+	  },
+	  
+     	  _close: function () {
+               // this._map.closePopup(this._popup);
+     },
+	  
+    _update: function (e) {
+	console.log(this);
+	let color;
+	for (key in this._map._layers) {
+	    if (this._map._layers[key].options.title == 'colorPicker') {
+		color = this._map._layers[key];
+	    }
+	}
+
+	  var a = color.getColor(e.latlng);
+	  var h = NaN;
+	  if (a !== null) {
+	      var value = RGBToHSL(a[0], a[1], a[2]);
+	      h = (REPLACE_DOMAIN_MAX - REPLACE_DOMAIN_MIN)*(1 - value[0]/360) + REPLACE_DOMAIN_MIN;
+	  }
+	h = isNaN(h) ? "N/A" : h.toFixed((REPLACE_DOMAIN_MAX).countDecimals());
+              this._popup.setLatLng(e.latlng)
+            .setContent(e.latlng.toString() + " value: " + h);
+	  }
+
+    
+      });
+      
+      L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);      
+      
+      var map = L.map('map', {
+          center: [REPLACE_CENTER_Y,
+		   REPLACE_CENTER_X],
+          zoom: 3,
+	  cursor: true,
+          minZoom: 2,
+          maxZoom: 15,
+	  timeDimension: true,
+      timeDimensionOptions: {
+             times: REPLACE_TIMES
+	  },
+	  timeDimensionControl: true,	  
+          layers: [osm, TimeGribLayer]
+      });
+      TimeGribLayer.addTo(map);
+      
+      var basemaps = {"OpenStreetMap": osm, "CartoDB Positron": cartodb}
+      var overlaymaps = {"REPLACE_GRIB_COMMENT": TimeGribLayer}
+      // Title
+      var title = L.control();
+      title.onAdd = function(map) {
+          this._div = L.DomUtil.create('div', 'ctl title');
+          this.update();
+          return this._div;
+      };
+      title.update = function(props) {
+          this._div.innerHTML = "REPLACE_TITLE";
+      };
+      title.addTo(map);
+      // Note
+      var title = L.control({position: 'bottomleft'});
+
+      title.onAdd = function(map) {
+          this._div = L.DomUtil.create('div', 'ctl src');
+          this.update();
+          return this._div;
+    };
+    var src = "Created by ChatECMWF";
+      title.update = function(props) {
+          this._div.innerHTML = src;
+      };
+      title.addTo(map);
+      // Add base layers
+      L.control.layers(basemaps, overlaymaps, {collapsed: false}).addTo(map);
+
+      var legend = L.control({position: 'bottomright'});      
+
+      legend.onAdd = function (map) {
+      
+      var div = L.DomUtil.create('div', 'gradient');
+      var startScale = REPLACE_DOMAIN_MIN;
+      var stopScale = REPLACE_DOMAIN_MAX;
+      var cardinality = 256.;
+      var colorPalette = new Array('rgba(48, 18, 59, 255)', 'rgba(49, 21, 66, 255)', 'rgba(50, 24, 74, 255)', 'rgba(52, 27, 81, 255)', 'rgba(53, 30, 88, 255)', 'rgba(54, 33, 95, 255)', 'rgba(55, 35, 101, 255)', 'rgba(56, 38, 108, 255)', 'rgba(57, 41, 114, 255)', 'rgba(58, 44, 121, 255)', 'rgba(59, 47, 127, 255)', 'rgba(60, 50, 133, 255)', 'rgba(60, 53, 139, 255)', 'rgba(61, 55, 145, 255)', 'rgba(62, 58, 150, 255)', 'rgba(63, 61, 156, 255)', 'rgba(64, 64, 161, 255)', 'rgba(64, 67, 166, 255)', 'rgba(65, 69, 171, 255)', 'rgba(65, 72, 176, 255)', 'rgba(66, 75, 181, 255)', 'rgba(67, 78, 186, 255)', 'rgba(67, 80, 190, 255)', 'rgba(67, 83, 194, 255)', 'rgba(68, 86, 199, 255)', 'rgba(68, 88, 203, 255)', 'rgba(69, 91, 206, 255)', 'rgba(69, 94, 210, 255)', 'rgba(69, 96, 214, 255)', 'rgba(69, 99, 217, 255)', 'rgba(70, 102, 221, 255)', 'rgba(70, 104, 224, 255)', 'rgba(70, 107, 227, 255)', 'rgba(70, 109, 230, 255)', 'rgba(70, 112, 232, 255)', 'rgba(70, 115, 235, 255)', 'rgba(70, 117, 237, 255)', 'rgba(70, 120, 240, 255)', 'rgba(70, 122, 242, 255)', 'rgba(70, 125, 244, 255)', 'rgba(70, 127, 246, 255)', 'rgba(70, 130, 248, 255)', 'rgba(69, 132, 249, 255)', 'rgba(69, 135, 251, 255)', 'rgba(69, 137, 252, 255)', 'rgba(68, 140, 253, 255)', 'rgba(67, 142, 253, 255)', 'rgba(66, 145, 254, 255)', 'rgba(65, 147, 254, 255)', 'rgba(64, 150, 254, 255)', 'rgba(63, 152, 254, 255)', 'rgba(62, 155, 254, 255)', 'rgba(60, 157, 253, 255)', 'rgba(59, 160, 252, 255)', 'rgba(57, 162, 252, 255)', 'rgba(56, 165, 251, 255)', 'rgba(54, 168, 249, 255)', 'rgba(52, 170, 248, 255)', 'rgba(51, 172, 246, 255)', 'rgba(49, 175, 245, 255)', 'rgba(47, 177, 243, 255)', 'rgba(45, 180, 241, 255)', 'rgba(43, 182, 239, 255)', 'rgba(42, 185, 237, 255)', 'rgba(40, 187, 235, 255)', 'rgba(38, 189, 233, 255)', 'rgba(37, 192, 230, 255)', 'rgba(35, 194, 228, 255)', 'rgba(33, 196, 225, 255)', 'rgba(32, 198, 223, 255)', 'rgba(30, 201, 220, 255)', 'rgba(29, 203, 218, 255)', 'rgba(28, 205, 215, 255)', 'rgba(27, 207, 212, 255)', 'rgba(26, 209, 210, 255)', 'rgba(25, 211, 207, 255)', 'rgba(24, 213, 204, 255)', 'rgba(24, 215, 202, 255)', 'rgba(23, 217, 199, 255)', 'rgba(23, 218, 196, 255)', 'rgba(23, 220, 194, 255)', 'rgba(23, 222, 191, 255)', 'rgba(24, 224, 189, 255)', 'rgba(24, 225, 186, 255)', 'rgba(25, 227, 184, 255)', 'rgba(26, 228, 182, 255)', 'rgba(27, 229, 180, 255)', 'rgba(29, 231, 177, 255)', 'rgba(30, 232, 175, 255)', 'rgba(32, 233, 172, 255)', 'rgba(34, 235, 169, 255)', 'rgba(36, 236, 166, 255)', 'rgba(39, 237, 163, 255)', 'rgba(41, 238, 160, 255)', 'rgba(44, 239, 157, 255)', 'rgba(47, 240, 154, 255)', 'rgba(50, 241, 151, 255)', 'rgba(53, 243, 148, 255)', 'rgba(56, 244, 145, 255)', 'rgba(59, 244, 141, 255)', 'rgba(63, 245, 138, 255)', 'rgba(66, 246, 135, 255)', 'rgba(70, 247, 131, 255)', 'rgba(74, 248, 128, 255)', 'rgba(77, 249, 124, 255)', 'rgba(81, 249, 121, 255)', 'rgba(85, 250, 118, 255)', 'rgba(89, 251, 114, 255)', 'rgba(93, 251, 111, 255)', 'rgba(97, 252, 108, 255)', 'rgba(101, 252, 104, 255)', 'rgba(105, 253, 101, 255)', 'rgba(109, 253, 98, 255)', 'rgba(113, 253, 95, 255)', 'rgba(116, 254, 92, 255)', 'rgba(120, 254, 89, 255)', 'rgba(124, 254, 86, 255)', 'rgba(128, 254, 83, 255)', 'rgba(132, 254, 80, 255)', 'rgba(135, 254, 77, 255)', 'rgba(139, 254, 75, 255)', 'rgba(142, 254, 72, 255)', 'rgba(146, 254, 70, 255)', 'rgba(149, 254, 68, 255)', 'rgba(152, 254, 66, 255)', 'rgba(155, 253, 64, 255)', 'rgba(158, 253, 62, 255)', 'rgba(161, 252, 61, 255)', 'rgba(164, 252, 59, 255)', 'rgba(166, 251, 58, 255)', 'rgba(169, 251, 57, 255)', 'rgba(172, 250, 55, 255)', 'rgba(174, 249, 55, 255)', 'rgba(177, 248, 54, 255)', 'rgba(179, 248, 53, 255)', 'rgba(182, 247, 53, 255)', 'rgba(185, 245, 52, 255)', 'rgba(187, 244, 52, 255)', 'rgba(190, 243, 52, 255)', 'rgba(192, 242, 51, 255)', 'rgba(195, 241, 51, 255)', 'rgba(197, 239, 51, 255)', 'rgba(200, 238, 51, 255)', 'rgba(202, 237, 51, 255)', 'rgba(205, 235, 52, 255)', 'rgba(207, 234, 52, 255)', 'rgba(209, 232, 52, 255)', 'rgba(212, 231, 53, 255)', 'rgba(214, 229, 53, 255)', 'rgba(216, 227, 53, 255)', 'rgba(218, 226, 54, 255)', 'rgba(221, 224, 54, 255)', 'rgba(223, 222, 54, 255)', 'rgba(225, 220, 55, 255)', 'rgba(227, 218, 55, 255)', 'rgba(229, 216, 56, 255)', 'rgba(231, 215, 56, 255)', 'rgba(232, 213, 56, 255)', 'rgba(234, 211, 57, 255)', 'rgba(236, 209, 57, 255)', 'rgba(237, 207, 57, 255)', 'rgba(239, 205, 57, 255)', 'rgba(240, 203, 58, 255)', 'rgba(242, 200, 58, 255)', 'rgba(243, 198, 58, 255)', 'rgba(244, 196, 58, 255)', 'rgba(246, 194, 58, 255)', 'rgba(247, 192, 57, 255)', 'rgba(248, 190, 57, 255)', 'rgba(249, 188, 57, 255)', 'rgba(249, 186, 56, 255)', 'rgba(250, 183, 55, 255)', 'rgba(251, 181, 55, 255)', 'rgba(251, 179, 54, 255)', 'rgba(252, 176, 53, 255)', 'rgba(252, 174, 52, 255)', 'rgba(253, 171, 51, 255)', 'rgba(253, 169, 50, 255)', 'rgba(253, 166, 49, 255)', 'rgba(253, 163, 48, 255)', 'rgba(254, 161, 47, 255)', 'rgba(254, 158, 46, 255)', 'rgba(254, 155, 45, 255)', 'rgba(254, 152, 44, 255)', 'rgba(253, 149, 43, 255)', 'rgba(253, 146, 41, 255)', 'rgba(253, 143, 40, 255)', 'rgba(253, 140, 39, 255)', 'rgba(252, 137, 38, 255)', 'rgba(252, 134, 36, 255)', 'rgba(251, 131, 35, 255)', 'rgba(251, 128, 34, 255)', 'rgba(250, 125, 32, 255)', 'rgba(250, 122, 31, 255)', 'rgba(249, 119, 30, 255)', 'rgba(248, 116, 28, 255)', 'rgba(247, 113, 27, 255)', 'rgba(247, 110, 26, 255)', 'rgba(246, 107, 24, 255)', 'rgba(245, 104, 23, 255)', 'rgba(244, 101, 22, 255)', 'rgba(243, 99, 21, 255)', 'rgba(242, 96, 20, 255)', 'rgba(241, 93, 19, 255)', 'rgba(239, 90, 17, 255)', 'rgba(238, 88, 16, 255)', 'rgba(237, 85, 15, 255)', 'rgba(236, 82, 14, 255)', 'rgba(234, 80, 13, 255)', 'rgba(233, 77, 13, 255)', 'rgba(232, 75, 12, 255)', 'rgba(230, 73, 11, 255)', 'rgba(229, 70, 10, 255)', 'rgba(227, 68, 10, 255)', 'rgba(226, 66, 9, 255)', 'rgba(224, 64, 8, 255)', 'rgba(222, 62, 8, 255)', 'rgba(221, 60, 7, 255)', 'rgba(219, 58, 7, 255)', 'rgba(217, 56, 6, 255)', 'rgba(215, 54, 6, 255)', 'rgba(214, 52, 5, 255)', 'rgba(212, 50, 5, 255)', 'rgba(210, 48, 5, 255)', 'rgba(208, 47, 4, 255)', 'rgba(206, 45, 4, 255)', 'rgba(203, 43, 3, 255)', 'rgba(201, 41, 3, 255)', 'rgba(199, 40, 3, 255)', 'rgba(197, 38, 2, 255)', 'rgba(195, 36, 2, 255)', 'rgba(192, 35, 2, 255)', 'rgba(190, 33, 2, 255)', 'rgba(187, 31, 1, 255)', 'rgba(185, 30, 1, 255)', 'rgba(182, 28, 1, 255)', 'rgba(180, 27, 1, 255)', 'rgba(177, 25, 1, 255)', 'rgba(174, 24, 1, 255)', 'rgba(172, 22, 1, 255)', 'rgba(169, 21, 1, 255)', 'rgba(166, 20, 1, 255)', 'rgba(163, 18, 1, 255)', 'rgba(160, 17, 1, 255)', 'rgba(157, 16, 1, 255)', 'rgba(154, 14, 1, 255)', 'rgba(151, 13, 1, 255)', 'rgba(148, 12, 1, 255)', 'rgba(145, 11, 1, 255)', 'rgba(142, 10, 1, 255)', 'rgba(139, 9, 1, 255)', 'rgba(135, 8, 1, 255)', 'rgba(132, 7, 1, 255)', 'rgba(129, 6, 2, 255)', 'rgba(125, 5, 2, 255)', 'rgba(122, 4, 2, 255)');
+
+	  for (var i = 0; i < cardinality; i++) {
+			  div.innerHTML +=
+			  '<span class="grad-step" style="background-color:' + colorPalette[i] + '"></span>'
+			  }
+			  div.innerHTML += '<span class="domain-min">' + startScale + '</span>';
+			  div.innerHTML += '<span class="domain-max">' + stopScale + '</span>';
+			  
+      return div;
+     };
+
+      legend.addTo(map);
+
+      Number.prototype.countDecimals = function () {
+	  if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
+
+	  var str = this.toString();
+	  if (str.indexOf(".") !== -1 && str.indexOf("-") !== -1) {
+              return str.split("-")[1] || 0;
+	  } else if (str.indexOf(".") !== -1) {
+              return str.split(".")[1].length || 0;
+	  }
+	  return str.split("-")[1] || 0;
+      }
+      
+      const RGBToHSL = (r, g, b) => {
+	  r /= 255;
+	  g /= 255;
+	  b /= 255;
+	  const l = Math.max(r, g, b);
+	  const s = l - Math.min(r, g, b);
+	  const h = s
+		? l === r
+		? (g - b) / s
+		: l === g
+		? 2 + (b - r) / s
+		: 4 + (r - g) / s
+		: 0;
+	  return [
+	      60 * h < 0 ? 60 * h + 360 : 60 * h,
+	      100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+	      (100 * (2 * l - s)) / 2,
+	  ];
+      };
+      
+      map.on("mousemove", function(event) {
+	  var a = TimeGribLayer._colorpicker.getColor(event.latlng);
+	  var h = NaN;
+	  if (a !== null) {
+	      var value = RGBToHSL(a[0], a[1], a[2]);
+	      h = (REPLACE_DOMAIN_MAX - REPLACE_DOMAIN_MIN)*(1 - value[0]/360) + REPLACE_DOMAIN_MIN;
+	  }
+	  map.attributionControl.setPrefix(isNaN(h) ? "N/A" : h.toFixed((REPLACE_DOMAIN_MAX).countDecimals()));
+      });      
+      
+      </script>
+  </body>
+</html>

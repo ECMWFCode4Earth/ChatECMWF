@@ -1,0 +1,3 @@
+What is ECMWF?
+How can I employ the CDSAPI for downloading data?
+Can you provide me an example of the .cdsapirc file? Where should I store it?

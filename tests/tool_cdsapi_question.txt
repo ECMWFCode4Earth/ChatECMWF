@@ -1,0 +1,2 @@
+Download the precipitation data for the Kathrina Hurricane from the CDSAPI. Employ standard configuration for that event, without asking for more information.
+Download the data from the cdsapi for the temperature over Germany in the week from the 22nd to the 26th of July 2016.

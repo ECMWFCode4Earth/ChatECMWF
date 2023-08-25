@@ -1,0 +1,2 @@
+Plot a chart of the precipitation in Madagascar for tomorrow at 12. Do not ask follow-up questions, just use this information.
+Plot a chart of the carbon dioxide in three days from now at 16. Do not ask follow-up questions, just use this information.
