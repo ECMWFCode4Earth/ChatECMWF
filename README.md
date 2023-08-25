@@ -37,7 +37,7 @@ Please follow these steps:
 
 2. ```cd chatECMWFinterface```
 
-3. Setup the required environment variables (```OPENAI_API_KEY``` and ```HUGGINGFACEHUB_API_TOKEN```) in the [.env](./src/.env) file. Several API keys are required, in particular those from [OpenAI](https://openai.com/blog/openai-api), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired version and temperature of the GPT model, setting the ```GPT_VERSION``` and ```GPT_TEMPERATURE```, as well as ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file.
+3. Setup the required environment variables (```OPENAI_API_KEY``` and ```HUGGINGFACEHUB_API_TOKEN```) in the [.env](.env) file. Several API keys are required, in particular those from [OpenAI](https://openai.com/blog/openai-api), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired version and temperature of the GPT model, setting the ```GPT_VERSION``` and ```GPT_TEMPERATURE```, as well as ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file.
 
 4. Setup the CDS API key in the [.cdsapirc](.cdsapirc) file, following the [documentation](https://cds.climate.copernicus.eu/api-how-to).
 
