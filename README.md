@@ -33,17 +33,21 @@ To ensure a seamless experience in any type of infrastructure, we employ [Docker
 
 Please follow these steps:
 
-1. Clone the repository via the command ```git clone TODO: REPLACE LINK```
+1. Clone the repository via the command ```git clone https://github.com/ECMWFCode4Earth/ChatECMWF.git```
 
 2. ```cd chatECMWFinterface```
 
-3. Setup the required environment variables (```OPENAI_API_KEY``` and ```HUGGINGFACEHUB_API_TOKEN```) in the [.env](./src/.env) file. Several API keys are required, in particular those from [OpenAI](https://openai.com/blog/openai-api), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired version and temperature of the GPT model, setting the ```GPT_VERSION``` and ```GPT_TEMPERATURE```, as well as ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file. 
+3. Setup the required environment variables (```OPENAI_API_KEY``` and ```HUGGINGFACEHUB_API_TOKEN```) in the [.env](./src/.env) file. Several API keys are required, in particular those from [OpenAI](https://openai.com/blog/openai-api), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired version and temperature of the GPT model, setting the ```GPT_VERSION``` and ```GPT_TEMPERATURE```, as well as ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file.
 
-4. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) into a ```vector_db``` folder.
+4. Setup the CDS API key in the [.cdsapirc](.cdsapirc) file, following the [documentation](https://cds.climate.copernicus.eu/api-how-to).
 
-5. Run the bash script ```run.sh```
+5. ```mkdir vector_db```
 
-6. If no error was triggererd, the chatbot is now available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+6. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) into the ```vector_db``` folder.
+
+7. Run the bash script ```run.sh```
+
+8. The chatbot is now available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 
 ## Methodology
