@@ -43,7 +43,7 @@ Please follow these steps:
 
 4. Setup the required environment variables (```REPLICATE_API_TOKEN```, ```HUGGINGFACEHUB_API_TOKEN``` and eventually ```REPLICATE_MODEL```, which is currently set up to a [Llama2](https://ai.meta.com/llama/) instance) in the [.env](/.env) file. Several API keys are required, in particular those from [Replicate](https://replicate.com/), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file. 
 
-5. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) into a ```vector_db``` folder.
+5. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EUsfeotdlqFJlyrhO2uj87wBL_aoBzi8UWUd4VrW30ys2Q?e=DBYf4B) into a ```vector_db``` folder.
 
 6. Run the bash script ```run.sh```
 
