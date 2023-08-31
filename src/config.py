@@ -15,7 +15,7 @@ class Configs(BaseSettings):
     OPENAI_API_KEY: str = ""
     HUGGINGFACEHUB_API_TOKEN: str = ""
     LOGGING_FILE: str = "logging.log"
-    GPT_VERISON: str = "gpt-4"
+    GPT_VERSION: str = "gpt-4"
     GPT_TEMPERATURE: float = 0.0
     ECMWF_CHARTS_SERVER: str = "https://charts.ecmwf.int/opencharts-api/v1/"
     PORT: int = 4444
@@ -24,7 +24,7 @@ class Configs(BaseSettings):
     BIND_IP: str = "0.0.0.0"
 
     class Config:
-        env_file = ".env"
+        env_file = "/opt/run/.env"
 
 
 configs = Configs()

@@ -9,6 +9,7 @@ RUN pip install -r /opt/run/requirements.txt
 
 COPY main.py /opt/run/main.py
 COPY ./src /opt/run/src
+COPY .env /opt/run/.env
 COPY ./assets/ /opt/run/assets
 COPY .cdsapirc /root/.cdsapirc
 
