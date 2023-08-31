@@ -6,12 +6,13 @@ from typing import List
 import openai
 
 from .config import Logger, configs
+from .model import llm
 
 openai.api_key = configs.OPENAI_API_KEY
 
-prompt1 = """You have a list of available mappings. You have to extract from the list of mappings the one that best matches the description I will give you. Pick only from the available names. It may even be that there is not an exact match, but you need to find out which one is the best choice, always only from the available items. Please output only the name of the choice, no additional reasoning."""
+prompt1 = """You have a list of available items. You have to extract from the list of mappings the one that best matches the description I will give you. Pick only from the available names, do not invent new names. It may even be that there is not an exact match, but you need to find out which one is the best choice, always only from the available items. Please output only the name of the choice, no additional reasoning."""
 prompt2 = """\n\nThe description is: '{}'"""
-prompt3 = """\n\nThe list of available maps is: {}"""
+prompt3 = """\n\nThe list of available items is: {}"""
 
 
 def create_prompt(desc: str, maps: List[str]) -> str:
@@ -32,7 +33,7 @@ def create_prompt(desc: str, maps: List[str]) -> str:
     return prompt
 
 
-def get_chatgpt_completion(prompt: str, model: str = "gpt-3.5-turbo") -> str:
+def get_chatgpt_completion(prompt: str) -> str:
     """
     This function requests the answer for the prompt.
 
@@ -43,13 +44,12 @@ def get_chatgpt_completion(prompt: str, model: str = "gpt-3.5-turbo") -> str:
     Returns:
         answer: str
     """
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0,
-    )
-    return str(response.choices[0].message["content"])
+    response = llm(prompt)
+    if '*' in response:
+        processed_response = response.split("*")[1][1:]
+    elif response[0] == ' ':
+        processed_response = response[1:]
+    return processed_response
 
 
 # Now we run a few examples

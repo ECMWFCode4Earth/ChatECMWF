@@ -12,11 +12,10 @@ class Configs(BaseSettings):
     DS_ECMWF_WEB: str = "vector_db/ecmwf_web"
     DS_CONFLUENCE_GITHUB: str = "vector_db/deeplake_ds"
     DS_OPENAPI_REF: str = "vector_db/openapi_ref"
-    OPENAI_API_KEY: str = ""
+    REPLICATE_API_TOKEN: str = ""
+    REPLICATE_MODEL: str = "replicate/llama-2-70b-chat:2796ee9483c3fd7aa2e171d38f4ca12251a30609463dcfd4cd76703f22e96cdf"
     HUGGINGFACEHUB_API_TOKEN: str = ""
     LOGGING_FILE: str = "logging.log"
-    GPT_VERISON: str = "gpt-4"
-    GPT_TEMPERATURE: float = 0.0
     ECMWF_CHARTS_SERVER: str = "https://charts.ecmwf.int/opencharts-api/v1/"
     PORT: int = 4444
     MAX_TOKENS: int = 512
@@ -24,8 +23,8 @@ class Configs(BaseSettings):
     BIND_IP: str = "0.0.0.0"
 
     class Config:
-        env_file = ".env"
+        env_file = "/opt/run/.env"
 
 
-configs = Configs()
+configs = Configs(_env_file='/opt/run/.env')
 Logger.add(configs.BASE_PATH / configs.LOGGING_FILE)

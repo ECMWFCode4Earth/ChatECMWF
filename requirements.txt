@@ -5,7 +5,8 @@ python-dotenv==1.0.0
 gradio==3.39.0
 deeplake==3.6.14
 loguru==0.7.0
-pydantic==1.10.12
+pydantic[dotenv]==1.10.12
 tqdm==4.65.0
 openai==0.27.8
 sentence_transformers==2.2.2
+replicate==0.11.0

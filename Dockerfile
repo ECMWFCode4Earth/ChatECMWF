@@ -11,6 +11,7 @@ COPY main.py /opt/run/main.py
 COPY ./src /opt/run/src
 COPY ./assets/ /opt/run/assets
 COPY .cdsapirc /root/.cdsapirc
+COPY .env /opt/run/.env
 
 WORKDIR /opt/run/
 
