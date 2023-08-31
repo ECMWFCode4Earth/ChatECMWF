@@ -31,6 +31,8 @@ Finally, the [tests](/tests) folder contains simple functional tests which check
 
 To ensure a seamless experience in any type of infrastructure, we employ [Docker](https://www.docker.com) containers to run the software in a reproducible way. Therefore, the requirements to run chatECMWF is ```docker```, together with the needed API keys (OpenAI and HuggingFaceHub) for employing the LLMs.
 
+> **_NOTE:_**  Employing the main branch requires an OpenAI API Key for ChatGPT, which, in the present time, is the best choice for a stable and seamless experience. ChatGPT credits pricing is explained in details [here](https://openai.com/pricing); you will not need many of them as a single user, but it would be better to estimate the costs if you're planning to use them in production for many users. A free alternative, based on [Replicate](https://replicate.com/) base credits, is available in the ```llama2``` branch of this repository.
+
 Please follow these steps:
 
 1. Clone the repository via the command ```git clone https://github.com/ECMWFCode4Earth/ChatECMWF.git```
