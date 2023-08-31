@@ -31,23 +31,23 @@ Finally, the [tests](/tests) folder contains simple functional tests which check
 
 To ensure a seamless experience in any type of infrastructure, we employ [Docker](https://www.docker.com) containers to run the software in a reproducible way. Therefore, the requirements to run chatECMWF is ```docker```, together with the needed API keys ([Replicate](https://replicate.com/) and HuggingFaceHub) for employing the LLMs. According to [Replicate official documentation](https://replicate.com/pricing), *You can use Replicate for free, but after a bit you'll be asked to enter your credit card.*. Therefore, this branch allows the user to get a grasp of what the software is capable, even using fully-open source model, which, cloud-hosted (so the user does not have to own or purchase a GPU and take care of the installation of the model).
 
-#### DISCLAIMER
-
-This branch has been created to ensure that users without the possibility of purchasing ChatGPT credits on the OpenAI platform. Not all the tools (namely, the CDSAPI data download) available within the LLM agent are supported, and the stability of the LLM itself is smaller compare to ChatGPT one. One of the main problems regards the parsing of the model output, which often does not meet langchain requirements, therefore leading to intermediate output to be presented as the answer, or to various exceptions. Still, the meteogram and the charts tool work, and the knowledge base retrieval can be tuned for better results.
+> **_DISCLAIMER_**  This branch has been created to ensure that users without the possibility of purchasing ChatGPT credits on the OpenAI platform. Not all the tools (namely, the CDSAPI data download) available within the LLM agent are supported, and the stability of the LLM itself is smaller compare to ChatGPT one. One of the main problems regards the parsing of the model output, which often does not meet langchain requirements, therefore leading to intermediate output to be presented as the answer, or to various exceptions. Still, the meteogram and the charts tool work, and the knowledge base retrieval can be tuned for better results.
 
 Please follow these steps:
 
-1. Clone the repository via the command ```git clone TODO: REPLACE LINK```
+1. Clone the repository via the command ```git clone (https://github.com/ECMWFCode4Earth/ChatECMWF.git)```
 
-2. ```cd chatECMWFinterface```
+2. ```git checkout llama2``` 
 
-3. Setup the required environment variables (```REPLICATE_API_TOKEN```, ```HUGGINGFACEHUB_API_TOKEN``` and eventually ```REPLICATE_MODEL```, which is currently set up to a [Llama2](https://ai.meta.com/llama/) instance) in the [.env](/.env) file. Several API keys are required, in particular those from [Replicate](https://replicate.com/), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file. 
+3. ```cd chatECMWFinterface```
 
-4. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) into a ```vector_db``` folder.
+4. Setup the required environment variables (```REPLICATE_API_TOKEN```, ```HUGGINGFACEHUB_API_TOKEN``` and eventually ```REPLICATE_MODEL```, which is currently set up to a [Llama2](https://ai.meta.com/llama/) instance) in the [.env](/.env) file. Several API keys are required, in particular those from [Replicate](https://replicate.com/), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file. 
 
-5. Run the bash script ```run.sh```
+5. Unzip the saved databases [openapi](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/Eb_QXGOxnxdCuqmgqdX2AoYBE0i-JiNh9TRNTRi1cjd44Q?e=nBTqBt), [web](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) and [confluence and github](https://sciscry-my.sharepoint.com/:u:/g/personal/piero_sciscry_ai/EWjSkmq3BdZKr49H4-1DU3gB0a0_Jupxz3qOpPwnek3efw?e=gLnQI3) into a ```vector_db``` folder.
 
-6. If no error was triggererd, the chatbot is now available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+6. Run the bash script ```run.sh```
+
+7. If no error was triggererd, the chatbot is now available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 
 ## Methodology
