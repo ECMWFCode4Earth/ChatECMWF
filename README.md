@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The [European Centre for Medium-Range Weather Forecasts (ECMWF)](https://www.ecmwf.int) has a very large amount of data, in the order of [hundreds of petabytes](https://www.ecmwf.int/en/about/media-centre/key-facts-and-figures). The access to the data is granted to users via a few different APIs, as well as through web interfaces. Due to the complexity of the data stored — thousand of different metereological variables — the discoverability of the data is not ideal, and a new users might feel overwhelmed by the large amount of data-retrieval options available to her. ECMWF documentation is also extensive, and suffers similar from discoverability problems.
+The [European Centre for Medium-Range Weather Forecasts (ECMWF)](https://www.ecmwf.int) has a very large amount of data, in the order of [hundreds of petabytes](https://www.ecmwf.int/en/about/media-centre/key-facts-and-figures). The access to the data is granted to users via a few different APIs, as well as through web interfaces. Due to the complexity of the data stored — thousand of different metereological variables — the discoverability of the data is not ideal, and a new users might feel overwhelmed by the large amount of data-retrieval options available to her. ECMWF documentation is also extensive, and suffers from similar discoverability problems.
 
 ChatECMWF aims at solving this problem via a chatbot, allowing a user to describe in natural language the information she is interested in. For instance a query could be
 
@@ -17,7 +17,7 @@ or
     How can I download data from the CDSAPI? How is the .cdsapirc file looking? 
 
 
-ChatECMWF interacts with the user in a conversational style, asking for more details when appropriate, and finally answering with either a (possibly interactive) plot of the data, or with a textual answer based on data it retrieved from ECMWF Confluence [knowledge base](https://confluence.ecmwf.int) or github repositories.
+ChatECMWF interacts with the user in a conversational style, asking for more details when appropriate, and finally answering with either a (possibly interactive) plot of the data, or with a textual answer based on data it retrieved from ECMWF Confluence [knowledge base](https://confluence.ecmwf.int) or GitHub repositories.
 
 ## Project outputs
 
@@ -37,7 +37,7 @@ Please follow these steps:
 
 1. Clone the repository via the command ```git clone https://github.com/ECMWFCode4Earth/ChatECMWF.git```
 
-2. ```cd chatECMWFinterface```
+2. ```cd chatECMWF```
 
 3. Setup the required environment variables (```OPENAI_API_KEY``` and ```HUGGINGFACEHUB_API_TOKEN```) in the [.env](.env) file. Several API keys are required, in particular those from [OpenAI](https://openai.com/blog/openai-api), [HuggingFace](https://huggingface.co/docs/huggingface_hub/v0.5.1/en/package_reference/hf_api). You can also customize the desired version and temperature of the GPT model, setting the ```GPT_VERSION``` and ```GPT_TEMPERATURE```, as well as ```MAX_TOKENS```, which can control the length of generated texts. All the possible configurations can be found in the [src/config.py](src/config.py) file.
 
