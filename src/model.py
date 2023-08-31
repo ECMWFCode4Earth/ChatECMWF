@@ -35,7 +35,7 @@ memory = MyBuffer(
 )
 
 llm = OpenAI(
-    model_name=configs.GPT_VERISON,
+    model_name=configs.GPT_VERSION,
     temperature=configs.GPT_TEMPERATURE,
     max_tokens=configs.MAX_TOKENS,
 )
